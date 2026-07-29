@@ -1,0 +1,98 @@
+version: 2
+
+models:
+  - name: bronze_orders
+    description: "Bronze Olist Orders"
+    columns:
+      - name: order_id
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('bronze_customers')
+              field: customer_id
+      - name: order_purchase_timestamp
+        tests:
+          - not_null
+
+  - name: bronze_customers
+    columns:
+      - name: customer_id
+        tests:
+          - unique
+          - not_null
+      - name: customer_unique_id
+        tests:
+          - not_null
+      - name: customer_zip_code_prefix
+        tests:
+          - relationships:
+              to: ref('bronze_geolocation')
+              field: geolocation_zip_code_prefix
+              config:
+                severity: warn
+
+  - name: bronze_geolocation
+    columns:
+      - name: geolocation_zip_code_prefix
+        tests:
+          - not_null
+
+  - name: bronze_order_items
+    columns:
+      - name: order_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('bronze_orders')
+              field: order_id
+      - name: order_item_id
+        tests:
+          - not_null
+      - name: product_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('bronze_products')
+              field: product_id
+      - name: seller_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('bronze_sellers')
+              field: seller_id
+      - name: price
+        tests:
+          - not_null
+
+  - name: bronze_order_payments
+    columns:
+      - name: order_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('bronze_orders')
+              field: order_id
+      - name: payment_type
+        tests:
+          - not_null
+      - name: payment_value
+        tests:
+          - not_null
+
+  - name: bronze_products
+    columns:
+      - name: product_id
+        tests:
+          - unique
+          - not_null
+
+  - name: bronze_sellers
+    columns:
+      - name: seller_id
+        tests:
+          - unique
+          - not_null

@@ -3,6 +3,8 @@ from google.cloud import bigquery, storage
 from pathlib import Path
 import os
 
+from schema import TABLE_SCHEMAS
+
 load_dotenv()
 
 PROJECT_ID = os.getenv('PROJECT_ID')
@@ -15,12 +17,7 @@ storage_client = storage.Client(project=PROJECT_ID)
 bucket = storage_client.bucket(BUCKET_ID)
 blobs = bucket.list_blobs()
 
-job_config = bigquery.LoadJobConfig(
-    source_format=bigquery.SourceFormat.CSV,
-    skip_leading_rows=1,
-    autodetect=True,
-    write_disposition="WRITE_APPEND"
-)
+
 
 try:
     print('Verificando se o dataset já existe')
@@ -37,9 +34,20 @@ for blob in blobs:
         table_id = f'{PROJECT_ID}.{DATASET_ID}.{table_name}'
         uri = f'gs://{BUCKET_ID}/{blob.name}'
 
+        schema = TABLE_SCHEMAS.get(blob.name.replace('.csv',''))
+
+        job_config = bigquery.LoadJobConfig(
+                        source_format=bigquery.SourceFormat.CSV,
+                        skip_leading_rows=1,
+                        autodetect=False,
+                        schema = schema,
+                        write_disposition="WRITE_APPEND"
+                    )
+
         print(f'Fazendo upload da tabela {table_id}')
         try:
             load_job = bq_client.load_table_from_uri(uri, table_id,job_config=job_config)
             load_job.result()
-        except Exception:
+        except Exception as e:
             print(f'Upload da tabela {table_id} falhou')
+            print(e)
