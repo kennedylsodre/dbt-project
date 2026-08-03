@@ -2,8 +2,8 @@
 
 SELECT 
     geolocation_zip_code_prefix,
-    geolocation_lat,
-    geolocation_lng,
+    CAST(geolocation_lat AS {{dbt.type_float()}}) geolocation_lat,
+    CAST(geolocation_lng AS {{dbt.type_float()}}) geolocation_lng,
     geolocation_city,
     geolocation_state
 FROM {{source('olist','raw_geolocation')}}
