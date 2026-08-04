@@ -29,18 +29,15 @@ except Exception:
     print('Dataset setado')
 
 for blob in blobs:
-    if blob.name.endswith('csv'):
-        table_name = blob.name.replace('olist','raw').replace('.csv','')
+    if blob.name.endswith('.parquet'):
+        table_name = blob.name.replace('olist','raw').replace('.parquet','')
         table_id = f'{PROJECT_ID}.{DATASET_ID}.{table_name}'
         uri = f'gs://{BUCKET_ID}/{blob.name}'
 
         schema = TABLE_SCHEMAS.get(blob.name.replace('.csv',''))
 
         job_config = bigquery.LoadJobConfig(
-                        source_format=bigquery.SourceFormat.CSV,
-                        skip_leading_rows=1,
-                        autodetect=False,
-                        schema = schema,
+                        source_format=bigquery.SourceFormat.PARQUET,
                         write_disposition="WRITE_APPEND"
                     )
 
