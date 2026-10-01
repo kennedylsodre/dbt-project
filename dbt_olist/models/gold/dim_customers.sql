@@ -1,8 +1,8 @@
 {{ config(materialized='table') }}
 
-with customer_orders as (
+WITH customer_orders AS (
 
-    select
+    SELECT
         customers.customer_unique_id,
         customers.customer_city,
         customers.customer_state,
@@ -12,43 +12,43 @@ with customer_orders as (
         orders.order_purchase_timestamp,
         orders.order_total_paid,
         orders.avg_review_score
-    from {{ ref('silver_customers') }} as customers
-    inner join {{ ref('silver_orders') }} as orders
-        on orders.customer_id = customers.customer_id
+    FROM {{ ref('silver_customers') }} AS customers
+    INNER JOIN {{ ref('silver_orders') }} AS orders
+        ON orders.customer_id = customers.customer_id
 
 ),
 
-latest_address as (
+latest_address AS (
 
-    select
+    SELECT
         customer_unique_id,
         customer_city,
         customer_state,
         customer_lat,
         customer_lng
-    from customer_orders
-    qualify row_number() over (
-        partition by customer_unique_id
-        order by order_purchase_timestamp desc
+    FROM customer_orders
+    QUALIFY ROW_NUMBER() OVER (
+        PARTITION BY customer_unique_id
+        ORDER BY order_purchase_timestamp DESC
     ) = 1
 
 ),
 
-customer_metrics as (
+customer_metrics AS (
 
-    select
+    SELECT
         customer_unique_id,
-        min(order_purchase_timestamp) as first_order_at,
-        max(order_purchase_timestamp) as last_order_at,
-        count(distinct order_id) as total_orders,
-        coalesce(sum(order_total_paid), 0) as total_spent,
-        avg(avg_review_score) as avg_review_score
-    from customer_orders
-    group by 1
+        MIN(order_purchase_timestamp) AS first_order_at,
+        MAX(order_purchase_timestamp) AS last_order_at,
+        COUNT(DISTINCT order_id) AS total_orders,
+        COALESCE(SUM(order_total_paid), 0) AS total_spent,
+        AVG(avg_review_score) AS avg_review_score
+    FROM customer_orders
+    GROUP BY 1
 
 )
 
-select
+SELECT
     latest_address.customer_unique_id,
     latest_address.customer_city,
     latest_address.customer_state,
@@ -59,6 +59,6 @@ select
     customer_metrics.total_orders,
     customer_metrics.total_spent,
     customer_metrics.avg_review_score
-from latest_address
-inner join customer_metrics
-    on customer_metrics.customer_unique_id = latest_address.customer_unique_id
+FROM latest_address
+INNER JOIN customer_metrics
+    ON customer_metrics.customer_unique_id = latest_address.customer_unique_id

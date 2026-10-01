@@ -1,19 +1,19 @@
 -- a soma de price dos itens deve bater com order_total_value do pedido
-with items as (
+WITH items AS (
 
-    select
+    SELECT
         order_id,
-        sum(price) as items_total
-    from {{ ref('fct_order_items') }}
-    group by 1
+        SUM(price) AS items_total
+    FROM {{ ref('fct_order_items') }}
+    GROUP BY 1
 
 )
 
-select
+SELECT
     orders.order_id,
     orders.order_total_value,
     items.items_total
-from {{ ref('fct_orders') }} as orders
-inner join items
-    on items.order_id = orders.order_id
-where abs(coalesce(orders.order_total_value, 0) - items.items_total) > 0.01
+FROM {{ ref('fct_orders') }} AS orders
+INNER JOIN items
+    ON items.order_id = orders.order_id
+WHERE ABS(COALESCE(orders.order_total_value, 0) - items.items_total) > 0.01

@@ -1,6 +1,6 @@
 {{ config(materialized='table') }}
 
-select
+SELECT
     review_id,
     order_id,
     review_score,
@@ -8,8 +8,8 @@ select
     review_comment_message,
     review_creation_date,
     review_answer_timestamp
-from {{ ref('bronze_order_reviews') }}
-qualify row_number() over (
-    partition by review_id
-    order by review_answer_timestamp desc
+FROM {{ ref('bronze_order_reviews') }}
+QUALIFY ROW_NUMBER() OVER (
+    PARTITION BY review_id
+    ORDER BY review_answer_timestamp DESC
 ) = 1

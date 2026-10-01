@@ -1,40 +1,40 @@
 {{ config(materialized='table') }}
 
-with items_agg as (
+WITH items_agg AS (
 
-    select
+    SELECT
         order_id,
-        sum(price) as order_total_value,
-        sum(freight_value) as order_total_freight,
-        count(*) as order_item_count
-    from {{ ref('silver_order_items') }}
-    group by 1
+        SUM(price) AS order_total_value,
+        SUM(freight_value) AS order_total_freight,
+        COUNT(*) AS order_item_count
+    FROM {{ ref('silver_order_items') }}
+    GROUP BY 1
 
 ),
 
-payments_agg as (
+payments_agg AS (
 
-    select
+    SELECT
         order_id,
-        sum(payment_value) as order_total_paid,
-        count(distinct payment_type) as payment_methods_count
-    from {{ ref('silver_order_payments') }}
-    group by 1
+        SUM(payment_value) AS order_total_paid,
+        COUNT(DISTINCT payment_type) AS payment_methods_count
+    FROM {{ ref('silver_order_payments') }}
+    GROUP BY 1
 
 ),
 
-reviews_agg as (
+reviews_agg AS (
 
-    select
+    SELECT
         order_id,
-        avg(review_score) as avg_review_score,
-        count(*) as review_count
-    from {{ ref('silver_order_reviews') }}
-    group by 1
+        AVG(review_score) AS avg_review_score,
+        COUNT(*) AS review_count
+    FROM {{ ref('silver_order_reviews') }}
+    GROUP BY 1
 
 )
 
-select
+SELECT
     orders.order_id,
     orders.customer_id,
     orders.order_status,
@@ -44,9 +44,9 @@ select
     orders.order_delivered_customer_date,
     orders.order_estimated_delivery_date,
 
-    timestamp_diff(orders.order_delivered_customer_date, orders.order_purchase_timestamp, day) as delivery_time_days,
-    timestamp_diff(orders.order_approved_at, orders.order_purchase_timestamp, day) as approval_delay_days,
-    orders.order_delivered_customer_date > orders.order_estimated_delivery_date as is_delivered_late,
+    TIMESTAMP_DIFF(orders.order_delivered_customer_date, orders.order_purchase_timestamp, DAY) AS delivery_time_days,
+    TIMESTAMP_DIFF(orders.order_approved_at, orders.order_purchase_timestamp, DAY) AS approval_delay_days,
+    orders.order_delivered_customer_date > orders.order_estimated_delivery_date AS is_delivered_late,
 
     items_agg.order_total_value,
     items_agg.order_total_freight,
@@ -58,7 +58,7 @@ select
     reviews_agg.avg_review_score,
     reviews_agg.review_count
 
-from {{ ref('bronze_orders') }} as orders
-left join items_agg on items_agg.order_id = orders.order_id
-left join payments_agg on payments_agg.order_id = orders.order_id
-left join reviews_agg on reviews_agg.order_id = orders.order_id
+FROM {{ ref('bronze_orders') }} AS orders
+LEFT JOIN items_agg ON items_agg.order_id = orders.order_id
+LEFT JOIN payments_agg ON payments_agg.order_id = orders.order_id
+LEFT JOIN reviews_agg ON reviews_agg.order_id = orders.order_id

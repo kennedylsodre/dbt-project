@@ -1,37 +1,37 @@
 {{ config(materialized='table') }}
 
-with geolocation_coordinates as (
+WITH geolocation_coordinates AS (
 
-    select
-        geolocation_zip_code_prefix as zip_code_prefix,
-        avg(geolocation_lat) as geolocation_lat,
-        avg(geolocation_lng) as geolocation_lng
-    from {{ ref('bronze_geolocation') }}
-    group by 1
+    SELECT
+        geolocation_zip_code_prefix AS zip_code_prefix,
+        AVG(geolocation_lat) AS geolocation_lat,
+        AVG(geolocation_lng) AS geolocation_lng
+    FROM {{ ref('bronze_geolocation') }}
+    GROUP BY 1
 
 ),
 
-geolocation_city_state as (
+geolocation_city_state AS (
 
-    select
-        geolocation_zip_code_prefix as zip_code_prefix,
+    SELECT
+        geolocation_zip_code_prefix AS zip_code_prefix,
         geolocation_city,
         geolocation_state
-    from {{ ref('bronze_geolocation') }}
-    group by 1, 2, 3
-    qualify row_number() over (
-        partition by zip_code_prefix
-        order by count(*) desc
+    FROM {{ ref('bronze_geolocation') }}
+    GROUP BY 1, 2, 3
+    QUALIFY ROW_NUMBER() OVER (
+        PARTITION BY zip_code_prefix
+        ORDER BY COUNT(*) DESC
     ) = 1
 
 )
 
-select
+SELECT
     geolocation_city_state.zip_code_prefix,
     geolocation_coordinates.geolocation_lat,
     geolocation_coordinates.geolocation_lng,
-    trim(lower(geolocation_city_state.geolocation_city)) as geolocation_city,
-    upper(geolocation_city_state.geolocation_state) as geolocation_state
-from geolocation_city_state
-inner join geolocation_coordinates
-    on geolocation_coordinates.zip_code_prefix = geolocation_city_state.zip_code_prefix
+    TRIM(LOWER(geolocation_city_state.geolocation_city)) AS geolocation_city,
+    UPPER(geolocation_city_state.geolocation_state) AS geolocation_state
+FROM geolocation_city_state
+INNER JOIN geolocation_coordinates
+    ON geolocation_coordinates.zip_code_prefix = geolocation_city_state.zip_code_prefix
