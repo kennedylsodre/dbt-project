@@ -1,52 +1,52 @@
 {{ config(materialized='table') }}
 
-with items_agg as (
+WITH items_agg AS (
 
-    select
+    SELECT
         seller_id,
-        count(*) as total_items_sold,
-        count(distinct order_id) as total_orders,
-        sum(price) as total_revenue
-    from {{ ref('silver_order_items') }}
-    group by 1
+        COUNT(*) AS total_items_sold,
+        COUNT(DISTINCT order_id) AS total_orders,
+        SUM(price) AS total_revenue
+    FROM {{ ref('silver_order_items') }}
+    GROUP BY 1
 
 ),
 
-seller_orders as (
+seller_orders AS (
 
-    select distinct
+    SELECT DISTINCT
         seller_id,
         order_id
-    from {{ ref('silver_order_items') }}
+    FROM {{ ref('silver_order_items') }}
 
 ),
 
-orders_agg as (
+orders_agg AS (
 
-    select
+    SELECT
         seller_orders.seller_id,
-        avg(orders.avg_review_score) as avg_review_score,
-        avg(cast(orders.is_delivered_late as {{ dbt.type_int() }})) as late_delivery_rate
-    from seller_orders
-    inner join {{ ref('silver_orders') }} as orders
-        on orders.order_id = seller_orders.order_id
-    group by 1
+        AVG(orders.avg_review_score) AS avg_review_score,
+        AVG(CAST(orders.is_delivered_late AS {{ dbt.type_int() }})) AS late_delivery_rate
+    FROM seller_orders
+    INNER JOIN {{ ref('silver_orders') }} AS orders
+        ON orders.order_id = seller_orders.order_id
+    GROUP BY 1
 
 )
 
-select
+SELECT
     sellers.seller_id,
     sellers.seller_city,
     sellers.seller_state,
     sellers.seller_lat,
     sellers.seller_lng,
-    coalesce(items_agg.total_items_sold, 0) as total_items_sold,
-    coalesce(items_agg.total_orders, 0) as total_orders,
-    coalesce(items_agg.total_revenue, 0) as total_revenue,
+    COALESCE(items_agg.total_items_sold, 0) AS total_items_sold,
+    COALESCE(items_agg.total_orders, 0) AS total_orders,
+    COALESCE(items_agg.total_revenue, 0) AS total_revenue,
     orders_agg.avg_review_score,
     orders_agg.late_delivery_rate
-from {{ ref('silver_sellers') }} as sellers
-left join items_agg
-    on items_agg.seller_id = sellers.seller_id
-left join orders_agg
-    on orders_agg.seller_id = sellers.seller_id
+FROM {{ ref('silver_sellers') }} AS sellers
+LEFT JOIN items_agg
+    ON items_agg.seller_id = sellers.seller_id
+LEFT JOIN orders_agg
+    ON orders_agg.seller_id = sellers.seller_id

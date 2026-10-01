@@ -3,12 +3,12 @@
     partition_by={'field': 'order_date', 'data_type': 'date'}
 ) }}
 
-select
+SELECT
     orders.order_id,
     orders.customer_id,
     customers.customer_unique_id,
     customers.customer_state,
-    date(orders.order_purchase_timestamp) as order_date,
+    DATE(orders.order_purchase_timestamp) AS order_date,
     orders.order_status,
 
     orders.order_purchase_timestamp,
@@ -24,11 +24,11 @@ select
     orders.payment_methods_count,
 
     orders.delivery_time_days,
-    timestamp_diff(orders.order_estimated_delivery_date, orders.order_purchase_timestamp, day) as estimated_delivery_days,
+    TIMESTAMP_DIFF(orders.order_estimated_delivery_date, orders.order_purchase_timestamp, DAY) AS estimated_delivery_days,
     orders.approval_delay_days,
     orders.is_delivered_late,
 
     orders.avg_review_score
-from {{ ref('silver_orders') }} as orders
-left join {{ ref('silver_customers') }} as customers
-    on customers.customer_id = orders.customer_id
+FROM {{ ref('silver_orders') }} AS orders
+LEFT JOIN {{ ref('silver_customers') }} AS customers
+    ON customers.customer_id = orders.customer_id

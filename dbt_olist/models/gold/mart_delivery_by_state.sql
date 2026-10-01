@@ -1,16 +1,16 @@
 {{ config(materialized='table') }}
 
-select
+SELECT
     orders.customer_state,
     dates.year_month,
-    count(*) as total_delivered_orders,
-    avg(orders.delivery_time_days) as avg_delivery_time_days,
-    avg(orders.estimated_delivery_days) as avg_estimated_delivery_days,
-    avg(cast(orders.is_delivered_late as {{ dbt.type_int() }})) as late_delivery_rate,
-    avg(orders.order_total_freight) as avg_freight
-from {{ ref('fct_orders') }} as orders
-inner join {{ ref('dim_date') }} as dates
-    on dates.date_day = orders.order_date
-where orders.order_status = 'delivered'
-    and orders.order_delivered_customer_date is not null
-group by 1, 2
+    COUNT(*) AS total_delivered_orders,
+    AVG(orders.delivery_time_days) AS avg_delivery_time_days,
+    AVG(orders.estimated_delivery_days) AS avg_estimated_delivery_days,
+    AVG(CAST(orders.is_delivered_late AS {{ dbt.type_int() }})) AS late_delivery_rate,
+    AVG(orders.order_total_freight) AS avg_freight
+FROM {{ ref('fct_orders') }} AS orders
+INNER JOIN {{ ref('dim_date') }} AS dates
+    ON dates.date_day = orders.order_date
+WHERE orders.order_status = 'delivered'
+    AND orders.order_delivered_customer_date IS NOT NULL
+GROUP BY 1, 2
