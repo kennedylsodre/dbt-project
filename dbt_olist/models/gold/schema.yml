@@ -89,7 +89,7 @@ models:
           - unique
           - not_null
       - name: product_category_name
-        description: "Categoria (PT)"
+        description: "Categoria do produto"
       - name: product_photos_qty
         description: "Quantidade de fotos"
       - name: product_weight_g
@@ -173,7 +173,7 @@ models:
               to: ref('fct_orders')
               field: order_id
       - name: order_item_id
-        description: "Sequencial do item no pedido"
+        description: "ID do item no pedido"
         tests:
           - not_null
       - name: product_id
@@ -209,7 +209,7 @@ models:
       - name: order_status
         description: "Status do pedido"
       - name: shipping_limit_date
-        description: "Prazo para o vendedor despachar"
+        description: "Data limite de envio"
       - name: price
         description: "Preço do item"
       - name: freight_value
