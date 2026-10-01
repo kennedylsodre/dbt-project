@@ -33,5 +33,5 @@ select
     trim(lower(geolocation_city_state.geolocation_city)) as geolocation_city,
     upper(geolocation_city_state.geolocation_state) as geolocation_state
 from geolocation_city_state
-join geolocation_coordinates
+inner join geolocation_coordinates
     on geolocation_coordinates.zip_code_prefix = geolocation_city_state.zip_code_prefix
