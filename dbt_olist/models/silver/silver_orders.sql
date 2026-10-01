@@ -7,7 +7,7 @@ with items_agg as (
         sum(price) as order_total_value,
         sum(freight_value) as order_total_freight,
         count(*) as order_item_count
-    from {{ ref('bronze_order_items') }}
+    from {{ ref('silver_order_items') }}
     group by 1
 
 ),
@@ -18,7 +18,7 @@ payments_agg as (
         order_id,
         sum(payment_value) as order_total_paid,
         count(distinct payment_type) as payment_methods_count
-    from {{ ref('bronze_order_payments') }}
+    from {{ ref('silver_order_payments') }}
     group by 1
 
 ),
@@ -29,7 +29,7 @@ reviews_agg as (
         order_id,
         avg(review_score) as avg_review_score,
         count(*) as review_count
-    from {{ ref('bronze_order_reviews') }}
+    from {{ ref('silver_order_reviews') }}
     group by 1
 
 )

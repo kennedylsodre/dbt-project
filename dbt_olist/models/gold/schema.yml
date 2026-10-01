@@ -1,0 +1,113 @@
+version: 2
+
+models:
+  - name: dim_date
+    description: "Calendário, 1 linha por dia do período dos pedidos"
+    columns:
+      - name: date_day
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_customers
+    description: "Cliente real (customer_unique_id) com endereço do pedido mais recente"
+    columns:
+      - name: customer_unique_id
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_sellers
+    columns:
+      - name: seller_id
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_products
+    columns:
+      - name: product_id
+        tests:
+          - unique
+          - not_null
+
+  - name: fct_orders
+    description: "1 linha por pedido"
+    columns:
+      - name: order_id
+        tests:
+          - unique
+          - not_null
+      - name: customer_unique_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_customers')
+              field: customer_unique_id
+      - name: order_date
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_date')
+              field: date_day
+
+  - name: fct_order_items
+    description: "1 linha por item de pedido (incremental, merge por order_id + order_item_id)"
+    columns:
+      - name: order_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fct_orders')
+              field: order_id
+      - name: order_item_id
+        tests:
+          - not_null
+      - name: product_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_products')
+              field: product_id
+      - name: seller_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_sellers')
+              field: seller_id
+      - name: customer_unique_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_customers')
+              field: customer_unique_id
+      - name: order_date
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_date')
+              field: date_day
+
+  - name: mart_sales_monthly
+    description: "Vendas por mês x UF do cliente x categoria"
+
+  - name: mart_seller_performance
+    columns:
+      - name: seller_id
+        tests:
+          - unique
+          - not_null
+
+  - name: mart_delivery_by_state
+    description: "Entregas (só pedidos entregues) por UF do cliente x mês"
+
+  - name: mart_customer_rfm
+    columns:
+      - name: customer_unique_id
+        tests:
+          - unique
+          - not_null
+      - name: rfm_segment
+        tests:
+          - accepted_values:
+              values: ['campeoes', 'fieis', 'recentes', 'em_risco', 'perdidos', 'ocasionais']
