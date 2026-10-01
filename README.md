@@ -4,6 +4,8 @@ Pipeline ELT construído sobre o dataset público [Brazilian E-Commerce Public D
 
 O projeto cobre o fluxo completo: extração dos arquivos CSV, conversão para Parquet, carga em um data lake no Google Cloud Storage, ingestão no BigQuery e transformação em camadas (bronze, silver e gold) seguindo a arquitetura medallion.
 
+**Documentação dos modelos (dbt docs):** [kennedylsodre.github.io/dbt-project](https://kennedylsodre.github.io/dbt-project/)
+
 ## Arquitetura
 
 ```
@@ -51,6 +53,7 @@ BigQuery: bronze -> silver -> gold
 ```
 .
 ├── data/                       # CSVs do Kaggle e instruções de download
+├── docs/                       # dbt docs estático publicado no GitHub Pages
 ├── src/ingestion/
 │   ├── ingest_file_gcs.py      # CSV -> Parquet -> GCS
 │   ├── load_bigquery.py        # GCS -> BigQuery (raw)
