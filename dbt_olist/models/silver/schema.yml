@@ -27,7 +27,7 @@ models:
           - unique
           - not_null
       - name: customer_unique_id
-        description: "ID único do cliente real"
+        description: "ID único do cliente"
         tests:
           - not_null
       - name: customer_zip_code_prefix
@@ -69,11 +69,11 @@ models:
           - unique
           - not_null
       - name: product_category_name
-        description: "Categoria (PT); 'not_informed' quando nula"
+        description: "Categoria do produto; 'not_informed' quando nula"
       - name: product_name_lenght
-        description: "Tamanho do nome (caracteres)"
+        description: "Tamanho do nome do produto"
       - name: product_description_lenght
-        description: "Tamanho da descrição (caracteres)"
+        description: "Tamanho da descrição do produto"
       - name: product_photos_qty
         description: "Quantidade de fotos"
       - name: product_weight_g
@@ -147,7 +147,7 @@ models:
         tests:
           - not_null
       - name: order_item_id
-        description: "Sequencial do item no pedido"
+        description: "ID do item no pedido"
       - name: product_id
         description: "ID do produto"
         tests:
@@ -157,7 +157,7 @@ models:
         tests:
           - not_null
       - name: shipping_limit_date
-        description: "Prazo para o vendedor despachar"
+        description: "Data limite de envio"
       - name: price
         description: "Preço do item"
       - name: freight_value
@@ -173,7 +173,7 @@ models:
       - name: order_id
         description: "ID do pedido"
       - name: payment_sequential
-        description: "Sequencial do pagamento no pedido"
+        description: "ID do pagamento no pedido"
       - name: payment_type
         description: "Meio de pagamento"
         tests:
@@ -212,6 +212,6 @@ models:
       - name: review_comment_message
         description: "Texto do comentário"
       - name: review_creation_date
-        description: "Data de envio da pesquisa"
+        description: "Data de criação da avaliação"
       - name: review_answer_timestamp
-        description: "Data/hora da resposta"
+        description: "Data/hora de resposta da avaliação"
