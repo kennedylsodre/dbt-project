@@ -1,3 +1,5 @@
+{{ config(materialized='table') }}
+
 -- dataset é estático (termina em 2018): a recência é medida contra o último pedido do dataset, não contra hoje
 with reference_date as (
 

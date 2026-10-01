@@ -1,3 +1,5 @@
+{{ config(materialized='table') }}
+
 select
     orders.customer_state,
     dates.year_month,
