@@ -38,7 +38,7 @@ for blob in blobs:
 
         job_config = bigquery.LoadJobConfig(
                         source_format=bigquery.SourceFormat.PARQUET,
-                        write_disposition="WRITE_APPEND"
+                        write_disposition="WRITE_TRUNCATE"
                     )
 
         print(f'Fazendo upload da tabela {table_id}')

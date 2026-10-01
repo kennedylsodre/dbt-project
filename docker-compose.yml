@@ -1,0 +1,9 @@
+services:
+  olist-ingest:
+    build: .
+    env_file:
+      - .env
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: /secrets/key.json
+    volumes:
+      - ./secrets/gcp-key.json:/secrets/key.json:ro
