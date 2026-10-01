@@ -1,3 +1,5 @@
+{{ config(materialized='table') }}
+
 with seller_orders as (
 
     select distinct

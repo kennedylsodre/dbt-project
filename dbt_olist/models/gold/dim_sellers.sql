@@ -1,3 +1,5 @@
+{{ config(materialized='table') }}
+
 with items_agg as (
 
     select

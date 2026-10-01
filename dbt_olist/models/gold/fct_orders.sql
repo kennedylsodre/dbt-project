@@ -1,3 +1,8 @@
+{{ config(
+    materialized='table',
+    partition_by={'field': 'order_date', 'data_type': 'date'}
+) }}
+
 select
     orders.order_id,
     orders.customer_id,
