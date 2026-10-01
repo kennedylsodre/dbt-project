@@ -5,109 +5,311 @@ models:
     description: "Calendário, 1 linha por dia do período dos pedidos"
     columns:
       - name: date_day
+        description: "Data"
         tests:
           - unique
           - not_null
+      - name: year
+        description: "Ano"
+      - name: quarter
+        description: "Trimestre"
+      - name: month
+        description: "Mês (1-12)"
+      - name: month_name
+        description: "Nome do mês"
+      - name: year_month
+        description: "Ano-mês (YYYY-MM)"
+      - name: day_of_week
+        description: "Dia da semana (1 = domingo)"
+      - name: day_name
+        description: "Nome do dia da semana"
+      - name: is_weekend
+        description: "Sábado ou domingo"
 
   - name: dim_customers
     description: "Cliente real (customer_unique_id) com endereço do pedido mais recente"
     columns:
       - name: customer_unique_id
+        description: "ID único do cliente"
         tests:
           - unique
           - not_null
+      - name: customer_city
+        description: "Cidade do pedido mais recente"
+      - name: customer_state
+        description: "UF do pedido mais recente"
+      - name: customer_lat
+        description: "Latitude"
+      - name: customer_lng
+        description: "Longitude"
+      - name: first_order_at
+        description: "Data/hora do primeiro pedido"
+      - name: last_order_at
+        description: "Data/hora do último pedido"
+      - name: total_orders
+        description: "Quantidade de pedidos"
+      - name: total_spent
+        description: "Total pago (inclui frete)"
+      - name: avg_review_score
+        description: "Nota média dada pelo cliente"
 
   - name: dim_sellers
+    description: "Vendedores com localização e métricas acumuladas"
     columns:
       - name: seller_id
+        description: "ID do vendedor"
         tests:
           - unique
           - not_null
+      - name: seller_city
+        description: "Cidade"
+      - name: seller_state
+        description: "UF"
+      - name: seller_lat
+        description: "Latitude"
+      - name: seller_lng
+        description: "Longitude"
+      - name: total_items_sold
+        description: "Itens vendidos"
+      - name: total_orders
+        description: "Pedidos com itens do vendedor"
+      - name: total_revenue
+        description: "Receita (soma dos preços, sem frete)"
+      - name: avg_review_score
+        description: "Nota média dos pedidos do vendedor"
+      - name: late_delivery_rate
+        description: "% de pedidos entregues com atraso (0-1)"
 
   - name: dim_products
+    description: "Produtos"
     columns:
       - name: product_id
+        description: "ID do produto"
         tests:
           - unique
           - not_null
+      - name: product_category_name
+        description: "Categoria (PT)"
+      - name: product_photos_qty
+        description: "Quantidade de fotos"
+      - name: product_weight_g
+        description: "Peso (g)"
+      - name: product_length_cm
+        description: "Comprimento (cm)"
+      - name: product_height_cm
+        description: "Altura (cm)"
+      - name: product_width_cm
+        description: "Largura (cm)"
+      - name: product_volume_cm3
+        description: "Volume (cm³)"
 
   - name: fct_orders
     description: "1 linha por pedido"
     columns:
       - name: order_id
+        description: "ID do pedido"
         tests:
           - unique
           - not_null
+      - name: customer_id
+        description: "ID do cliente no pedido"
       - name: customer_unique_id
+        description: "FK para dim_customers"
         tests:
           - not_null
           - relationships:
               to: ref('dim_customers')
               field: customer_unique_id
+      - name: customer_state
+        description: "UF do cliente no pedido"
       - name: order_date
+        description: "Data da compra, FK para dim_date"
         tests:
           - not_null
           - relationships:
               to: ref('dim_date')
               field: date_day
+      - name: order_status
+        description: "Status do pedido"
+      - name: order_purchase_timestamp
+        description: "Data/hora da compra"
+      - name: order_approved_at
+        description: "Data/hora da aprovação do pagamento"
+      - name: order_delivered_carrier_date
+        description: "Data/hora de entrega à transportadora"
+      - name: order_delivered_customer_date
+        description: "Data/hora de entrega ao cliente"
+      - name: order_estimated_delivery_date
+        description: "Data estimada de entrega"
+      - name: order_total_value
+        description: "Soma dos preços dos itens (sem frete)"
+      - name: order_total_freight
+        description: "Soma do frete"
+      - name: order_total_paid
+        description: "Soma dos pagamentos (inclui frete)"
+      - name: order_item_count
+        description: "Quantidade de itens"
+      - name: payment_methods_count
+        description: "Meios de pagamento distintos"
+      - name: delivery_time_days
+        description: "Dias entre compra e entrega"
+      - name: estimated_delivery_days
+        description: "Dias entre compra e data estimada"
+      - name: approval_delay_days
+        description: "Dias entre compra e aprovação"
+      - name: is_delivered_late
+        description: "Entregue após a data estimada"
+      - name: avg_review_score
+        description: "Nota média do pedido"
 
   - name: fct_order_items
     description: "1 linha por item de pedido (incremental, merge por order_id + order_item_id)"
     columns:
       - name: order_id
+        description: "FK para fct_orders"
         tests:
           - not_null
           - relationships:
               to: ref('fct_orders')
               field: order_id
       - name: order_item_id
+        description: "Sequencial do item no pedido"
         tests:
           - not_null
       - name: product_id
+        description: "FK para dim_products"
         tests:
           - not_null
           - relationships:
               to: ref('dim_products')
               field: product_id
       - name: seller_id
+        description: "FK para dim_sellers"
         tests:
           - not_null
           - relationships:
               to: ref('dim_sellers')
               field: seller_id
       - name: customer_unique_id
+        description: "FK para dim_customers"
         tests:
           - not_null
           - relationships:
               to: ref('dim_customers')
               field: customer_unique_id
+      - name: customer_state
+        description: "UF do cliente no pedido"
       - name: order_date
+        description: "Data da compra, FK para dim_date (partição)"
         tests:
           - not_null
           - relationships:
               to: ref('dim_date')
               field: date_day
+      - name: order_status
+        description: "Status do pedido"
+      - name: shipping_limit_date
+        description: "Prazo para o vendedor despachar"
+      - name: price
+        description: "Preço do item"
+      - name: freight_value
+        description: "Frete do item"
+      - name: item_total_value
+        description: "Preço + frete"
+      - name: is_delivered_late
+        description: "Pedido entregue após a data estimada"
+      - name: order_review_score
+        description: "Nota média do pedido"
 
   - name: mart_sales_monthly
     description: "Vendas por mês x UF do cliente x categoria"
+    columns:
+      - name: year_month
+        description: "Ano-mês (YYYY-MM)"
+      - name: customer_state
+        description: "UF do cliente"
+      - name: product_category_name
+        description: "Categoria do produto"
+      - name: total_orders
+        description: "Pedidos distintos"
+      - name: total_items
+        description: "Itens vendidos"
+      - name: total_revenue
+        description: "Receita (sem frete)"
+      - name: total_freight
+        description: "Frete total"
+      - name: avg_ticket
+        description: "Receita / pedidos"
 
   - name: mart_seller_performance
+    description: "Performance e ranking de vendedores"
     columns:
       - name: seller_id
+        description: "ID do vendedor"
         tests:
           - unique
           - not_null
+      - name: seller_city
+        description: "Cidade"
+      - name: seller_state
+        description: "UF"
+      - name: total_revenue
+        description: "Receita (sem frete)"
+      - name: total_orders
+        description: "Pedidos"
+      - name: total_items_sold
+        description: "Itens vendidos"
+      - name: avg_ticket
+        description: "Receita / pedidos"
+      - name: avg_review_score
+        description: "Nota média"
+      - name: late_delivery_rate
+        description: "% de pedidos com atraso (0-1)"
+      - name: avg_delivery_time_days
+        description: "Tempo médio de entrega (dias)"
+      - name: revenue_rank_in_state
+        description: "Posição por receita dentro da UF"
 
   - name: mart_delivery_by_state
     description: "Entregas (só pedidos entregues) por UF do cliente x mês"
+    columns:
+      - name: customer_state
+        description: "UF do cliente"
+      - name: year_month
+        description: "Ano-mês (YYYY-MM)"
+      - name: total_delivered_orders
+        description: "Pedidos entregues"
+      - name: avg_delivery_time_days
+        description: "Tempo médio de entrega (dias)"
+      - name: avg_estimated_delivery_days
+        description: "Prazo médio estimado (dias)"
+      - name: late_delivery_rate
+        description: "% de pedidos com atraso (0-1)"
+      - name: avg_freight
+        description: "Frete médio por pedido"
 
   - name: mart_customer_rfm
+    description: "Segmentação RFM de clientes (recência medida contra o último pedido do dataset)"
     columns:
       - name: customer_unique_id
+        description: "ID único do cliente"
         tests:
           - unique
           - not_null
+      - name: recency_days
+        description: "Dias desde o último pedido"
+      - name: frequency
+        description: "Quantidade de pedidos"
+      - name: monetary
+        description: "Total pago"
+      - name: r_score
+        description: "Score de recência (1-5, ntile)"
+      - name: f_score
+        description: "Score de frequência (1-5, linear, 5+ pedidos = 5)"
+      - name: m_score
+        description: "Score monetário (1-5, ntile)"
       - name: rfm_segment
+        description: "Segmento derivado dos scores"
         tests:
           - accepted_values:
               values: ['campeoes', 'fieis', 'recentes', 'em_risco', 'perdidos', 'ocasionais']

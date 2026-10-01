@@ -2,109 +2,197 @@ version: 2
 
 models:
   - name: bronze_orders
-    description: "Bronze Olist Orders"
+    description: "Pedidos com timestamps tipados"
     columns:
       - name: order_id
+        description: "ID do pedido"
         tests:
           - unique
           - not_null
       - name: customer_id
+        description: "ID do cliente no pedido (muda a cada pedido)"
         tests:
           - not_null
           - relationships:
               to: ref('bronze_customers')
               field: customer_id
+      - name: order_status
+        description: "Status do pedido"
       - name: order_purchase_timestamp
+        description: "Data/hora da compra"
         tests:
           - not_null
+      - name: order_approved_at
+        description: "Data/hora da aprovação do pagamento"
+      - name: order_delivered_carrier_date
+        description: "Data/hora de entrega à transportadora"
+      - name: order_delivered_customer_date
+        description: "Data/hora de entrega ao cliente"
+      - name: order_estimated_delivery_date
+        description: "Data estimada de entrega"
 
   - name: bronze_customers
+    description: "Clientes por pedido"
     columns:
       - name: customer_id
+        description: "ID do cliente no pedido"
         tests:
           - unique
           - not_null
       - name: customer_unique_id
+        description: "ID único do cliente real"
         tests:
           - not_null
       - name: customer_zip_code_prefix
+        description: "Prefixo do CEP (5 dígitos)"
         tests:
           - relationships:
               to: ref('bronze_geolocation')
               field: geolocation_zip_code_prefix
               config:
                 severity: warn
+      - name: customer_city
+        description: "Cidade"
+      - name: customer_state
+        description: "UF"
 
   - name: bronze_geolocation
+    description: "Coordenadas por CEP (várias linhas por CEP)"
     columns:
       - name: geolocation_zip_code_prefix
+        description: "Prefixo do CEP"
         tests:
           - not_null
+      - name: geolocation_lat
+        description: "Latitude"
+      - name: geolocation_lng
+        description: "Longitude"
+      - name: geolocation_city
+        description: "Cidade"
+      - name: geolocation_state
+        description: "UF"
 
   - name: bronze_order_items
+    description: "Itens de pedido"
     columns:
       - name: order_id
+        description: "ID do pedido"
         tests:
           - not_null
           - relationships:
               to: ref('bronze_orders')
               field: order_id
       - name: order_item_id
+        description: "Sequencial do item no pedido"
         tests:
           - not_null
       - name: product_id
+        description: "ID do produto"
         tests:
           - not_null
           - relationships:
               to: ref('bronze_products')
               field: product_id
       - name: seller_id
+        description: "ID do vendedor"
         tests:
           - not_null
           - relationships:
               to: ref('bronze_sellers')
               field: seller_id
+      - name: shipping_limit_date
+        description: "Prazo para o vendedor despachar"
       - name: price
+        description: "Preço do item"
         tests:
           - not_null
+      - name: freight_value
+        description: "Frete do item"
 
   - name: bronze_order_payments
+    description: "Pagamentos de pedido (um pedido pode ter vários)"
     columns:
       - name: order_id
+        description: "ID do pedido"
         tests:
           - not_null
           - relationships:
               to: ref('bronze_orders')
               field: order_id
+      - name: payment_sequential
+        description: "Sequencial do pagamento no pedido"
       - name: payment_type
+        description: "Meio de pagamento"
         tests:
           - not_null
+      - name: payment_installments
+        description: "Número de parcelas"
       - name: payment_value
+        description: "Valor pago"
         tests:
           - not_null
 
   - name: bronze_products
+    description: "Produtos"
     columns:
       - name: product_id
+        description: "ID do produto"
         tests:
           - unique
           - not_null
+      - name: product_category_name
+        description: "Categoria (PT)"
+      - name: product_name_lenght
+        description: "Tamanho do nome (caracteres)"
+      - name: product_description_lenght
+        description: "Tamanho da descrição (caracteres)"
+      - name: product_photos_qty
+        description: "Quantidade de fotos"
+      - name: product_weight_g
+        description: "Peso (g)"
+      - name: product_length_cm
+        description: "Comprimento (cm)"
+      - name: product_height_cm
+        description: "Altura (cm)"
+      - name: product_width_cm
+        description: "Largura (cm)"
 
   - name: bronze_sellers
+    description: "Vendedores"
     columns:
       - name: seller_id
+        description: "ID do vendedor"
         tests:
           - unique
           - not_null
+      - name: seller_zip_code_prefix
+        description: "Prefixo do CEP"
+      - name: seller_city
+        description: "Cidade"
+      - name: seller_state
+        description: "UF"
 
   - name: bronze_order_reviews
+    description: "Avaliações de pedido (pode haver review_id duplicado)"
     columns:
       - name: review_id
+        description: "ID da avaliação"
         tests:
           - not_null
       - name: order_id
+        description: "ID do pedido"
         tests:
           - not_null
           - relationships:
               to: ref('bronze_orders')
               field: order_id
+      - name: review_score
+        description: "Nota de 1 a 5"
+      - name: review_comment_title
+        description: "Título do comentário"
+      - name: review_comment_message
+        description: "Texto do comentário"
+      - name: review_creation_date
+        description: "Data de envio da pesquisa"
+      - name: review_answer_timestamp
+        description: "Data/hora da resposta"

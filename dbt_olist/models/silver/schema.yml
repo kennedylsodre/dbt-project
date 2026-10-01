@@ -2,44 +2,101 @@ version: 2
 
 models:
   - name: silver_geolocation
-    description: "Dimensão de geolocalização deduplicada, 1 linha por CEP"
+    description: "Geolocalização deduplicada, 1 linha por CEP"
     columns:
       - name: zip_code_prefix
+        description: "Prefixo do CEP"
         tests:
           - unique
           - not_null
+      - name: geolocation_lat
+        description: "Latitude média do CEP"
+      - name: geolocation_lng
+        description: "Longitude média do CEP"
+      - name: geolocation_city
+        description: "Cidade mais frequente do CEP (minúsculas)"
+      - name: geolocation_state
+        description: "UF mais frequente do CEP"
 
   - name: silver_customers
+    description: "Clientes padronizados e geolocalizados"
     columns:
       - name: customer_id
+        description: "ID do cliente no pedido"
         tests:
           - unique
           - not_null
       - name: customer_unique_id
+        description: "ID único do cliente real"
         tests:
           - not_null
+      - name: customer_zip_code_prefix
+        description: "Prefixo do CEP"
+      - name: customer_city
+        description: "Cidade (minúsculas)"
+      - name: customer_state
+        description: "UF"
+      - name: customer_lat
+        description: "Latitude do CEP"
+      - name: customer_lng
+        description: "Longitude do CEP"
 
   - name: silver_sellers
+    description: "Vendedores padronizados e geolocalizados"
     columns:
       - name: seller_id
+        description: "ID do vendedor"
         tests:
           - unique
           - not_null
+      - name: seller_zip_code_prefix
+        description: "Prefixo do CEP"
+      - name: seller_city
+        description: "Cidade (minúsculas)"
+      - name: seller_state
+        description: "UF"
+      - name: seller_lat
+        description: "Latitude do CEP"
+      - name: seller_lng
+        description: "Longitude do CEP"
 
   - name: silver_products
+    description: "Produtos com categoria padronizada"
     columns:
       - name: product_id
+        description: "ID do produto"
         tests:
           - unique
           - not_null
+      - name: product_category_name
+        description: "Categoria (PT); 'not_informed' quando nula"
+      - name: product_name_lenght
+        description: "Tamanho do nome (caracteres)"
+      - name: product_description_lenght
+        description: "Tamanho da descrição (caracteres)"
+      - name: product_photos_qty
+        description: "Quantidade de fotos"
+      - name: product_weight_g
+        description: "Peso (g)"
+      - name: product_length_cm
+        description: "Comprimento (cm)"
+      - name: product_height_cm
+        description: "Altura (cm)"
+      - name: product_width_cm
+        description: "Largura (cm)"
 
   - name: silver_orders
+    description: "Pedidos enriquecidos com métricas de itens, pagamentos, reviews e entrega"
     columns:
       - name: order_id
+        description: "ID do pedido"
         tests:
           - unique
           - not_null
+      - name: customer_id
+        description: "ID do cliente no pedido"
       - name: order_status
+        description: "Status do pedido"
         tests:
           - accepted_values:
               values:
@@ -51,22 +108,74 @@ models:
                 - unavailable
                 - created
                 - approved
+      - name: order_purchase_timestamp
+        description: "Data/hora da compra"
+      - name: order_approved_at
+        description: "Data/hora da aprovação do pagamento"
+      - name: order_delivered_carrier_date
+        description: "Data/hora de entrega à transportadora"
+      - name: order_delivered_customer_date
+        description: "Data/hora de entrega ao cliente"
+      - name: order_estimated_delivery_date
+        description: "Data estimada de entrega"
+      - name: delivery_time_days
+        description: "Dias entre compra e entrega"
+      - name: approval_delay_days
+        description: "Dias entre compra e aprovação"
+      - name: is_delivered_late
+        description: "Entregue após a data estimada"
+      - name: order_total_value
+        description: "Soma dos preços dos itens (sem frete)"
+      - name: order_total_freight
+        description: "Soma do frete dos itens"
+      - name: order_item_count
+        description: "Quantidade de itens"
+      - name: order_total_paid
+        description: "Soma dos pagamentos (inclui frete)"
+      - name: payment_methods_count
+        description: "Quantidade de meios de pagamento distintos"
+      - name: avg_review_score
+        description: "Nota média das avaliações do pedido"
+      - name: review_count
+        description: "Quantidade de avaliações"
 
   - name: silver_order_items
+    description: "Itens de pedido com valor total e UF do vendedor"
     columns:
       - name: order_id
+        description: "ID do pedido"
         tests:
           - not_null
+      - name: order_item_id
+        description: "Sequencial do item no pedido"
       - name: product_id
+        description: "ID do produto"
         tests:
           - not_null
       - name: seller_id
+        description: "ID do vendedor"
         tests:
           - not_null
+      - name: shipping_limit_date
+        description: "Prazo para o vendedor despachar"
+      - name: price
+        description: "Preço do item"
+      - name: freight_value
+        description: "Frete do item"
+      - name: item_total_value
+        description: "Preço + frete"
+      - name: seller_state
+        description: "UF do vendedor"
 
   - name: silver_order_payments
+    description: "Pagamentos de pedido"
     columns:
+      - name: order_id
+        description: "ID do pedido"
+      - name: payment_sequential
+        description: "Sequencial do pagamento no pedido"
       - name: payment_type
+        description: "Meio de pagamento"
         tests:
           - accepted_values:
               values:
@@ -75,15 +184,34 @@ models:
                 - voucher
                 - debit_card
                 - not_defined
+      - name: payment_installments
+        description: "Número de parcelas"
+      - name: payment_value
+        description: "Valor pago"
+      - name: is_installment
+        description: "Pagamento parcelado (mais de 1 parcela)"
 
   - name: silver_order_reviews
+    description: "Avaliações deduplicadas por review_id (mantém a resposta mais recente)"
     columns:
       - name: review_id
+        description: "ID da avaliação"
         tests:
           - unique
           - not_null
+      - name: order_id
+        description: "ID do pedido"
       - name: review_score
+        description: "Nota de 1 a 5"
         tests:
           - accepted_values:
               values: [1, 2, 3, 4, 5]
               quote: false
+      - name: review_comment_title
+        description: "Título do comentário"
+      - name: review_comment_message
+        description: "Texto do comentário"
+      - name: review_creation_date
+        description: "Data de envio da pesquisa"
+      - name: review_answer_timestamp
+        description: "Data/hora da resposta"
