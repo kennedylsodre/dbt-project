@@ -96,3 +96,15 @@ models:
         tests:
           - unique
           - not_null
+
+  - name: bronze_order_reviews
+    columns:
+      - name: review_id
+        tests:
+          - not_null
+      - name: order_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('bronze_orders')
+              field: order_id
